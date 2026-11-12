@@ -1428,6 +1428,60 @@ void QuadTree::CastAABox(const AABoxCast &inBox, CastShapeBodyCollector &ioColle
 	WalkTree(inObjectLayerFilter, inTracking, visitor JPH_IF_TRACK_BROADPHASE_STATS(, mCastAABoxStats));
 }
 
+void QuadTree::CollideFrustum(const Frustum &inFrustum, CollideFrustumBodyCollector &ioCollector, const ObjectLayerFilter &inObjectLayerFilter, const TrackingVector &inTracking) const
+{
+	class Visitor
+	{
+	public:
+		/// Constructor
+		JPH_INLINE					Visitor(const Frustum &inFrustum, CollideShapeBodyCollector &ioCollector) :
+		mFrustum(inFrustum),
+		mCollector(ioCollector)
+		{
+		}
+
+		/// Returns true if further processing of the tree should be aborted
+		JPH_INLINE bool				ShouldAbort() const
+		{
+			return mCollector.ShouldEarlyOut();
+		}
+
+		/// Returns true if this node / body should be visited, false if no hit can be generated
+		JPH_INLINE bool				ShouldVisitNode(int inStackTop) const
+		{
+			return true;
+		}
+
+		/// Visit nodes, returns number of hits found and sorts ioChildNodeIDs so that they are at the beginning of the vector.
+		JPH_INLINE int				VisitNodes(Vec4Arg inBoundsMinX, Vec4Arg inBoundsMinY, Vec4Arg inBoundsMinZ, Vec4Arg inBoundsMaxX, Vec4Arg inBoundsMaxY, Vec4Arg inBoundsMaxZ, UVec4 &ioChildNodeIDs, int inStackTop) const
+		{
+			// Test the box vs 4 boxes
+			UVec4 hitting = AABox4VsFrustum(mFrustum, inBoundsMinX, inBoundsMinY, inBoundsMinZ, inBoundsMaxX, inBoundsMaxY, inBoundsMaxZ);
+			return CountAndSortTrues(hitting, ioChildNodeIDs);
+		}
+
+		/// Visit a body, returns false if the algorithm should terminate because no hits can be generated anymore
+		JPH_INLINE void				VisitBody(const BodyID &inBodyID, int inStackTop)
+		{
+			// Store potential hit with body
+			mCollector.AddHit(inBodyID);
+		}
+
+		/// Called when the stack is resized
+		JPH_INLINE void				OnStackResized([[maybe_unused]] size_t inNewStackSize) const
+		{
+			// Nothing to do
+		}
+
+	private:
+		const Frustum &				mFrustum;
+		CollideShapeBodyCollector &	mCollector;
+	};
+
+	Visitor visitor(inFrustum, ioCollector);
+	WalkTree(inObjectLayerFilter, inTracking, visitor JPH_IF_TRACK_BROADPHASE_STATS(, mCollideAABoxStats));
+}
+
 void QuadTree::FindCollidingPairs(const BodyVector &inBodies, const BodyID *inActiveBodies, int inNumActiveBodies, float inSpeculativeContactDistance, BodyPairCollector &ioPairCollector, const ObjectLayerPairFilter &inObjectLayerPairFilter) const
 {
 	// Note that we don't lock the tree at this point. We know that the tree is not going to be swapped or deleted while finding collision pairs due to the way the jobs are scheduled in the PhysicsSystem::Update.

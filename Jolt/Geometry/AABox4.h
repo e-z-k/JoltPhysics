@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Jolt/Geometry/OrientedBox.h>
+#include <Jolt/Geometry/Frustum.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -27,6 +28,26 @@ JPH_INLINE UVec4 AABox4VsBox(const AABox &inBox1, Vec4Arg inBox2MinX, Vec4Arg in
 
 	// Return overlap
 	return UVec4::sNot(UVec4::sOr(UVec4::sOr(nooverlapx, nooverlapy), nooverlapz));
+}
+
+/// Test if 4 bounding boxes overlap with a frustum
+JPH_INLINE UVec4 AABox4VsFrustum(const Frustum &inFrustum, Vec4Arg inBoxMinX, Vec4Arg inBoxMinY, Vec4Arg inBoxMinZ, Vec4Arg inBoxMaxX, Vec4Arg inBoxMaxY, Vec4Arg inBoxMaxZ)
+{
+	UVec4 result(0, 0, 0, 0);
+
+	for (int i{0}; i < 4; ++i)
+	{
+		if
+		(
+			inFrustum.Near.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f or
+			inFrustum.Near.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f or
+			inFrustum.Far.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f  or
+			inFrustum.Far.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f
+		)
+		result[i] = 1 << 31;
+	}
+
+	return result;
 }
 
 /// Scale 4 axis aligned boxes

@@ -248,6 +248,9 @@ public:
 	/// Cast a box and get intersecting bodies in ioCollector
 	void						CastAABox(const AABoxCast &inBox, CastShapeBodyCollector &ioCollector, const ObjectLayerFilter &inObjectLayerFilter, const TrackingVector &inTracking) const;
 
+	/// Get bodies intersecting with a frustum and any hits to ioCollector
+	void						CollideFrustum(const Frustum &inFrustum, CollideFrustumBodyCollector &ioCollector, const ObjectLayerFilter &inObjectLayerFilter, const TrackingVector &inTracking) const;
+
 	/// Find all colliding pairs between dynamic bodies, calls ioPairCollector for every pair found
 	void						FindCollidingPairs(const BodyVector &inBodies, const BodyID *inActiveBodies, int inNumActiveBodies, float inSpeculativeContactDistance, BodyPairCollector &ioPairCollector, const ObjectLayerPairFilter &inObjectLayerPairFilter) const;
 

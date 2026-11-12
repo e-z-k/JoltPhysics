@@ -17,11 +17,13 @@ class BroadPhaseCastResult;
 class AABox;
 class OrientedBox;
 struct AABoxCast;
+struct Frustum;
 
 // Various collector configurations
 using RayCastBodyCollector = CollisionCollector<BroadPhaseCastResult, CollisionCollectorTraitsCastRay>;
 using CastShapeBodyCollector = CollisionCollector<BroadPhaseCastResult, CollisionCollectorTraitsCastShape>;
 using CollideShapeBodyCollector = CollisionCollector<BodyID, CollisionCollectorTraitsCollideShape>;
+using CollideFrustumBodyCollector = CollisionCollector<BodyID, CollisionCollectorTraitsCollideShape>;
 
 /// Interface to the broadphase that can perform collision queries. These queries will only test the bounding box of the body to quickly determine a potential set of colliding bodies.
 /// The shapes of the bodies are not tested, if you want this then you should use the NarrowPhaseQuery interface.
@@ -48,6 +50,9 @@ public:
 
 	/// Cast a box and add any hits to ioCollector
 	virtual void		CastAABox(const AABoxCast &inBox, CastShapeBodyCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter = { }, const ObjectLayerFilter &inObjectLayerFilter = { }) const = 0;
+
+	/// Get bodies intersecting with a frustum and any hits to ioCollector
+	virtual void		CollideFrustum(const Frustum &inFrustum, CollideFrustumBodyCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter = { }, const ObjectLayerFilter &inObjectLayerFilter = { }) const {};
 
 	/// Get the bounding box of all objects in the broadphase
 	virtual AABox		GetBounds() const = 0;
