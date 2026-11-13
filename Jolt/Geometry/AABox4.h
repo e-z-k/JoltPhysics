@@ -37,14 +37,50 @@ JPH_INLINE UVec4 AABox4VsFrustum(const Frustum &inFrustum, Vec4Arg inBoxMinX, Ve
 
 	for (int i{0}; i < 4; ++i)
 	{
-		if
-		(
-			inFrustum.Near.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f or
-			inFrustum.Near.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f or
-			inFrustum.Far.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f  or
-			inFrustum.Far.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f
-		)
-		result[i] = 1 << 31;
+
+		Vec3 pt[6] =
+		{
+			{inBoxMinX[i], (inBoxMaxY[i] + inBoxMinY[i])/2.f, (inBoxMaxZ[i] + inBoxMinZ[i])/2.f },
+			{inBoxMaxX[i], (inBoxMaxY[i] + inBoxMinY[i])/2.f, (inBoxMaxZ[i] + inBoxMinZ[i])/2.f },
+			{(inBoxMinX[i] + inBoxMaxX[i])/2.f, inBoxMaxY[i], (inBoxMaxZ[i] + inBoxMinZ[i])/2.f },
+			{(inBoxMinX[i] + inBoxMaxX[i])/2.f, inBoxMinY[i], (inBoxMaxZ[i] + inBoxMinZ[i])/2.f },
+			{(inBoxMinX[i] + inBoxMaxX[i])/2.f, (inBoxMaxY[i] + inBoxMinY[i])/2.f, inBoxMaxZ[i] },
+			{(inBoxMinX[i] + inBoxMaxX[i])/2.f, (inBoxMaxY[i] + inBoxMinY[i])/2.f, inBoxMinZ[i] }
+		};
+
+		for (int j{0}; j < 6; ++j)
+		{
+			if
+			(
+				inFrustum.Left.SignedDistance(pt[j]) > 0.f and
+				inFrustum.Right.SignedDistance(pt[j]) > 0.f and
+				inFrustum.Near.SignedDistance(pt[j]) > 0.f and
+				inFrustum.Far.SignedDistance(pt[j]) > 0.f  and
+				inFrustum.Top.SignedDistance(pt[j]) > 0.f and
+				inFrustum.Bottom.SignedDistance(pt[j]) > 0.f
+			)
+			{
+				result[i] = 1 << 31;
+				break;
+			}
+		}
+
+		//if
+		//(
+			// (inFrustum.Near.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f or
+			// inFrustum.Near.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f) and
+			// (inFrustum.Far.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f  or
+			// inFrustum.Far.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f) and
+			// (inFrustum.Top.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f or
+			// inFrustum.Top.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f) and
+			// (inFrustum.Bottom.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f or
+			// inFrustum.Bottom.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f) and
+			// (inFrustum.Left.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f or
+			// inFrustum.Left.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f) and
+			// (inFrustum.Right.SignedDistance({inBoxMinX[i], inBoxMinY[i], inBoxMinZ[i]}) > 0.f or
+			// inFrustum.Right.SignedDistance({inBoxMaxX[i], inBoxMaxY[i], inBoxMaxZ[i]}) > 0.f)
+		//)
+		//result[i] = 1 << 31;
 	}
 
 	return result;
