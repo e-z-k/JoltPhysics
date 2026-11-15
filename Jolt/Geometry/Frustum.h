@@ -1,4 +1,5 @@
 #pragma once
+#include <Jolt/Math/Math.h>
 #include <Jolt/Math/Vec3.h>
 #include <Jolt/Math/Quat.h>
 #include <Jolt/Geometry/Plane.h>
@@ -37,7 +38,7 @@ public:
 		auto right_point = position + direction_right * 4.f;
 		auto left_point = position + direction_right * -4.f;
 
-		Quat quat = Quat::sRotation({0.f, 1.f, 0.f}, FOV/2.f);
+		Quat quat = Quat::sRotation({0.f, 1.f, 0.f}, DegreesToRadians(90.f - FOV/2.f));
 
 		auto right_dir = quat * direction;
 		auto left_dir = quat.InverseRotate(direction);
